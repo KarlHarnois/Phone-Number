@@ -2,18 +2,14 @@
   (:require [clojure.string :as str]))
 
 (defn number
-  "Format phone numbers for SMS messaging."
+  "Format phone number for SMS messaging."
   [n]
-  (let [remove-trunk (fn [x] (if (and (= 11 (count x))
-                                      (= \1 (first x)))
-                               (subs x 1)
-                               x))]
-    (let [result (->> (remove #((set " .()-") %) n)
-                      (apply str)
-                      remove-trunk)]
-      (if (= 10 (count result))
-        result
-        "0000000000"))))
+  (let [result (->> (remove #((set " .()-") %) n)
+                    (apply str))]
+    (if (or (= 10 (count result))
+            (and (= 11 (count result)) (= \1 (first result))))
+      (apply str (take-last 10 result))
+      "0000000000")))
 
 (defn area-code
   "Extract the area code from a phone number."
