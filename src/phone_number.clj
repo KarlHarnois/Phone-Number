@@ -1,33 +1,24 @@
 (ns phone-number
   (:require [clojure.string :as str]))
 
-(defn- remove-trunk-prefix
-  [s]
-  (if (= 11 (count s))
-    (if (= \1 (first s))
-      (subs s 1)
-      s)
-    s))
-
 (defn number
   "Format phone numbers for SMS messaging."
   [n]
-  (let [result (-> n
-                   (str/replace " " "")
-                   (str/replace "." "")
-                   (str/replace "(" "")
-                   (str/replace ")" "")
-                   (str/replace "-" "")
-                   remove-trunk-prefix)]
-    (if (= 10 (count result))
-      result
-      "0000000000")))
+  (let [remove-trunk (fn [x] (if (and (= 11 (count x))
+                                      (= \1 (first x)))
+                               (subs x 1)
+                               x))]
+    (let [result (->> (remove #((set " .()-") %) n)
+                      (apply str)
+                      remove-trunk)]
+      (if (= 10 (count result))
+        result
+        "0000000000"))))
 
 (defn area-code
   "Extract the area code from a phone number."
   [n]
-  (-> (phone-number/number n)
-      (.substring 0 3)))
+  (subs (phone-number/number n) 0 3))
 
 (defn pretty-print
   "Format a phone number."
